@@ -66,7 +66,7 @@ impl Universe {
 
     pub fn cells(&self) -> *const Cell {self.cells.as_ptr()}
 
-    pub fn toogle_cell(&self, row: u32, col: u32) {
+    pub fn toogle_cell(&mut self, row: u32, col: u32) {
         let idx = self.get_index(row, col);
         self.cells[idx].toogle()
     }
