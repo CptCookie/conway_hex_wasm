@@ -11,8 +11,23 @@
       pre {
           font-size: x-large;
       }
+      html {
+          height: 99%;
+      }
+      body {
+          height: 100%;
+      }
+
+      .c_container {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+      }
     </style>
-    <pre id="wasm"></pre>
-    <canvas id="can" width="1000" height="1000"></canvas>
+    <div class="c_container">
+      <canvas id="can" width="1000" height="900"></canvas>
+    </div>
   </body>
 </html>
