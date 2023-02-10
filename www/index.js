@@ -1,18 +1,19 @@
 import { Universe, Cell } from "wasm-hex-life";
 import { memory } from "wasm-hex-life/hex_life_bg.wasm";
 
+const canvas_size = 20 // hexs
 const hex_a = 2 * Math.PI / 6;              // inner angles
 const hex_ro = 20;                          // length from the center to the pik side
 const hex_ri = Math.sin(hex_a) * hex_ro;    // length from the center to the flat side
 
+const play_button = document.getElementById("play");
+const tick_button = document.getElementById("tick");
 const canvas = document.getElementById("can");
+canvas.width = canvas_size * hex_ri * 2 + hex_ri + canvas_size / 2
+canvas.height = canvas_size * hex_ro * 3/2 + canvas_size
 const ctx = canvas.getContext("2d");
 
-const universe = Universe.new(
-    canvas.getBoundingClientRect().height / (hex_ro * 3/2) -1 ,
-    canvas.getBoundingClientRect().width / (hex_ri * 2)
-);
-
+const universe = Universe.new(canvas_size, canvas_size);
 const width = universe.width();
 const height = universe.height();
 
@@ -21,11 +22,14 @@ const ALIVE_COLOR = "#1c1c1c";
 const MAX_FRAMES = 60;
 const TIME_PER_FRAME_MS = 1000 / MAX_FRAMES;
 
+let running = false;
+
 
 const getIndex = (row, column) => {
   "use strict";
   return row * width + column;
 };
+
 
 function drawHexagon(row, col, fill) {
   "use strict";
@@ -60,15 +64,6 @@ function drawUniverse() {
   }
 }
 
-const disance_point_field = (px, py, fr, fc) => {
-  const fy = fr * hex_ro + hex_ro / 2
-  const fx = fc * hex_ri + hex_ri / 2 + fr % 2 * hex_ri / 2
-
-  const dx = Math.abs(px - fx)
-  const dy = Math.abs(py -fy)
-
-  return dx ** 2 + dy ** 2
-}
 
 const get_field_from_pixels = (x, y) => {
   "use strict";
@@ -91,6 +86,24 @@ const get_field_from_pixels = (x, y) => {
   }
 }
 
+
+const renderLoop = () => {
+  "use strict";
+  let pre_time = new Date();
+  if (running) {
+    universe.tick();
+  }
+  drawUniverse();
+  let render_time = new Date() - pre_time;
+  if(render_time < TIME_PER_FRAME_MS){
+    setTimeout(()=> {requestAnimationFrame(renderLoop);}, TIME_PER_FRAME_MS-render_time);
+  } else {
+    requestAnimationFrame(renderLoop);
+  }
+};
+requestAnimationFrame(renderLoop);
+
+
 canvas.addEventListener("click", event => {
   "use strict";
   const boundingRect = canvas.getBoundingClientRect();
@@ -105,20 +118,18 @@ canvas.addEventListener("click", event => {
   universe.toogle_cell(row, col);
 });
 
-
-const renderLoop = () => {
-  "use strict";
-  let pre_time = new Date();
-  universe.tick();
-  drawUniverse();
-  let render_time = new Date() - pre_time;
-
-  if(render_time < TIME_PER_FRAME_MS){
-    setTimeout(()=> {requestAnimationFrame(renderLoop);}, TIME_PER_FRAME_MS-render_time);
-  } else {
+play_button.addEventListener("click", () => {
+  "use strict"
+  running = !running
+  if(running){
+    play_button.innerText = "STOP"
     requestAnimationFrame(renderLoop);
+  } else  {
+    play_button.innerText = "RUN"
   }
-};
+})
 
-requestAnimationFrame(renderLoop);
+tick_button.addEventListener("click", ()=> {
+  universe.tick()
+})
 
